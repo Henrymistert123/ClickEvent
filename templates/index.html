@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Counter</title>
+    <style>
+        body, html {
+            background-color: #000; /* Change background to black */
+            color: #fff; /* Text color to white for visibility */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Center content vertically */
+            height: 100vh;
+            padding: 20px;
+        }
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .payout {
+            font-size: 24px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        button {
+            background-color: #007BFF;
+            border: none;
+            color: white;
+            padding: 20px;
+            width: 150px;
+            height: 150px;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: row;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #counter {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        1 click = 100k gems rained!
+        <div class="payout">Current Payout: <span id="payout">0</span></div>
+    </div>
+    <div class="container">
+        <div class="button-container">
+            <button onclick="incrementCounter()">
+                Click me!
+                <p id="counter">0</p>
+            </button>
+        </div>
+    </div>
+    <div class="button-container">
+        <div id="timer">Event Ends: <span id="countdown"></span></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <script>
+        function getCounter() {
+            fetch('/click')
+                .then(response => response.json())
+                .then(data => {
+                    const counter = data.counter;
+                    document.getElementById('counter').innerText = counter;
+                    document.getElementById('payout').innerText = (counter * 100000).toLocaleString(); // Using toLocaleString for commas
+                });
+        }
+
+        function incrementCounter() {
+            fetch('/click', {
+                method: 'POST'
+            }).then(getCounter);
+        }
+
+        // Update the counter every 0.5 seconds
+        setInterval(getCounter, 500);
+
+        function updateCountdown() {
+            // Get the current date and time
+            var now = new Date();
+
+            // Set the target time for the countdown to 4 PM on the same day
+            var target = new Date(now);
+            target.setHours(16, 0, 0, 0);
+
+            // Calculate the difference between the target time and the current time
+            var diff = target - now;
+
+            // If the target time has passed, set a new target for the next day
+            if (diff < 0) {
+                target.setDate(target.getDate() + 1);
+                diff = target - now;
+            }
+
+            // Calculate hours, minutes, and seconds
+            var hours = Math.floor(diff / (1000 * 60 * 60));
+            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            // Display the countdown
+            document.getElementById('countdown').innerText = hours + "h " + minutes + "m " + seconds + "s ";
+        }
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
